@@ -1,7 +1,1 @@
-[
-  { "title": "TO DO", "text": "TEXT", "id": "1c5e" },
-  { "title": "HOMEWORK", "text": "complete homework", "id": "d9d5" },
-  { "title": "STUDY", "text": "look over materials", "id": "4dcc" },
-  { "title": "GO TO CLASS", "text": "go to class", "id": "2067" },
-  { "title": "RUN ERRANDS", "text": "run errands", "id": "d7a2" }
-]
+[{"title":"TO DO","text":"TEXT","id":"1c5e"}]

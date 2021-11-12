@@ -4,6 +4,7 @@ const path = require("path");
 const data = require("./db/db.json");
 const uuid = require("./helpers/uuid");
 const fs = require("fs");
+const { readAndAppend, readFromFile } = require("./fsUtils");
 
 // SET UP APP & PORT
 const app = express();
@@ -21,7 +22,11 @@ app.get("/notes", (req, res) =>
   res.sendFile(path.join(__dirname, "public/notes.html"))
 );
 
-app.get("/api/notes", (req, res) => res.json(data));
+//app.get("/api/notes", (req, res) => res.json(data));
+
+app.get("/api/notes", (req, res) => {
+  readFromFile("./db/db.json").then((data) => res.json(JSON.parse(data)));
+});
 
 app.get("/api/notes/:id", (req, res) => {
   const requestedNote = req.params.id.toLowerCase();
@@ -44,36 +49,44 @@ app.post("/api/notes", (req, res) => {
 
   //const { title, text } = req.body;
 
-  const newNote = {
-    title: req.body.title,
-    text: req.body.text,
-    id: uuid(),
-  };
+  if (req.body) {
+    const newNote = {
+      title: req.body.title,
+      text: req.body.text,
+      id: uuid(),
+    };
 
-  // Convert the data to a string so we can save it
-  //const reviewString = JSON.stringify(newReview);
-
-  const noteArray = JSON.parse(fs.readFileSync(`./db/db.json`));
-
-  console.log(noteArray);
-
-  noteArray.push(newNote);
-
-  // Write the string to a file
-  fs.writeFile(`./db/db.json`, JSON.stringify(noteArray), (err) =>
-    err
-      ? console.error(err)
-      : console.log(`Review for ${newNote.title} has been written to JSON file`)
-  );
-
-  const response = {
-    status: "success",
-    body: newNote,
-  };
-
-  console.log(response);
-  res.status(201).json(response);
+    readAndAppend(newNote, "./db/db.json");
+    res.json(`Tip added successfully 🚀`);
+  } else {
+    res.error("Error in adding tip");
+  }
 });
+
+// Convert the data to a string so we can save it
+//const reviewString = JSON.stringify(newReview);
+
+//   const noteArray = JSON.parse(fs.readFileSync(`./db/db.json`));
+
+//   console.log(noteArray);
+
+//   noteArray.push(newNote);
+
+//   // Write the string to a file
+//   fs.writeFile(`./db/db.json`, JSON.stringify(noteArray), (err) =>
+//     err
+//       ? console.error(err)
+//       : console.log(`Review for ${newNote.title} has been written to JSON file`)
+//   );
+
+//   const response = {
+//     status: "success",
+//     body: newNote,
+//   };
+
+//   console.log(response);
+//   res.status(201).json(response);
+// });
 
 // DELETE ROUTES
 app.delete("/api/notes/:id", (req, res) => {
@@ -91,7 +104,7 @@ app.delete("/api/notes/:id", (req, res) => {
           ? console.error(err)
           : console.log(`Note has been deleted from JSON file`)
       );
-
+      readFromFile("./db/db.json").then((data) => res.json(JSON.parse(data)));
       console.log(noteArray);
       return noteArray;
     }
