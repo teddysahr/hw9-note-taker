@@ -10,6 +10,8 @@ const app = express();
 const PORT = 3001;
 
 // MIDDLEWARES
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 // GET ROUTES
@@ -38,56 +40,63 @@ app.get("/api/notes/:id", (req, res) => {
 app.post("/api/notes", (req, res) => {
   console.info(`${req.method} request received to add a note`);
 
-  const { title, text } = req.body;
+  console.log(req.body);
 
-  if (title && text) {
-    const newNote = {
-      title,
-      text,
-      review_id: uuid(),
-    };
+  //const { title, text } = req.body;
 
-    // Convert the data to a string so we can save it
-    //const reviewString = JSON.stringify(newReview);
+  const newNote = {
+    title: req.body.title,
+    text: req.body.text,
+    id: uuid(),
+  };
 
-    const noteArray = JSON.parse(fs.readFileSync(`./db/db.json`));
+  // Convert the data to a string so we can save it
+  //const reviewString = JSON.stringify(newReview);
 
-    console.log(noteArray);
+  const noteArray = JSON.parse(fs.readFileSync(`./db/db.json`));
 
-    noteArray.push(newNote);
+  console.log(noteArray);
 
-    // Write the string to a file
-    fs.writeFile(`./db/db.json`, JSON.stringify(noteArray), (err) =>
-      err
-        ? console.error(err)
-        : console.log(
-            `Review for ${newNote.title} has been written to JSON file`
-          )
-    );
+  noteArray.push(newNote);
 
-    const response = {
-      status: "success",
-      body: newNote,
-    };
+  // Write the string to a file
+  fs.writeFile(`./db/db.json`, JSON.stringify(noteArray), (err) =>
+    err
+      ? console.error(err)
+      : console.log(`Review for ${newNote.title} has been written to JSON file`)
+  );
 
-    console.log(response);
-    res.status(201).json(response);
-  } else {
-    res.status(500).json("Error in posting review");
-  }
+  const response = {
+    status: "success",
+    body: newNote,
+  };
+
+  console.log(response);
+  res.status(201).json(response);
 });
 
 // DELETE ROUTES
 app.delete("/api/notes/:id", (req, res) => {
   const deleteNote = req.params.id.toLowerCase();
 
-  for (let i = 0; i < data.length; i++) {
-    if (deleteNote === data[i].id.toLowerCase()) {
-      return res.json(data[i]);
+  console.log(deleteNote);
+
+  const noteArray = JSON.parse(fs.readFileSync(`./db/db.json`));
+
+  for (let i = 0; i < noteArray.length; i++) {
+    if (noteArray[i].id === deleteNote) {
+      noteArray.splice(i, 1);
+      fs.writeFile(`./db/db.json`, JSON.stringify(noteArray), (err) =>
+        err
+          ? console.error(err)
+          : console.log(`Note has been deleted from JSON file`)
+      );
+
+      console.log(noteArray);
+      return noteArray;
     }
   }
 
-  // Return a message if the term doesn't exist in our DB
   return res.json("No note found");
 });
 
